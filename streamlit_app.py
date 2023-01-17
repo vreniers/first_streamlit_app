@@ -1,4 +1,4 @@
 
 import streamlit
 
-streamlit.title('Test new app')
+streamlit.title('My Parents New Healthy Diner')
