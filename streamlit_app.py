@@ -1,17 +1,13 @@
 
 import streamlit
-#import pandas
-#import requests
+import pandas
+import requests
+import snowflake.connector
 from urllib.error import URLError
 
 
-import snowflake.connector
-
-my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
-my_cur = my_cnx.cursor()
-my_cur.execute("select * from fruit_load_list")
-my_fruit_list = my_cur.fetchall()
-#my_fruit_list = my_fruit_list.set_index('Fruit')
+my_fruit_list = pandas.read_csv("https://uni-lab-files.s3.us-west-2.amazonaws.com/dabw/fruit_macros.txt")
+my_fruit_list = my_fruit_list.set_index('Fruit')
 
 streamlit.title('My Parents New Healthy Diner')
 
@@ -25,7 +21,7 @@ streamlit.text('🥑🍞 AVocado Toast')
 streamlit.header('🍌🥭 Build Your Own Fruit Smoothie 🥝🍇')
 
 # Let's put a pick list here so they can pick the fruit they want to include 
-fruits_selected = streamlit.multiselect("Pick some fruits:", my_fruit_list,['Avocado','Strawberries'])
+fruits_selected = streamlit.multiselect("Pick some fruits:", list(my_fruit_list.index),['Avocado','Strawberries'])
 fruits_to_show = my_fruit_list.loc[fruits_selected]
 
 # Display the table on the page.
@@ -42,10 +38,9 @@ fruityvice_normalized = pandas.json_normalize(fruityvice_response.json())
 # write your own comment - what does this do?
 streamlit.dataframe(fruityvice_normalized)
 
-streamlit.stop()
-
-
-added_fruit = streamlit.text_input('What fruit would you like to add?','')
-streamlit.write('Thanks for adding ', added_fruit)
-
-my_cur.execute("INSERT INTO fruit_load_list VALUES (" + added_fruit + ")")
+my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
+my_cur = my_cnx.cursor()
+my_cur.execute("select * from fruit_load_list")
+my_data_rows = my_cur.fetchall()
+streamlit.text("The fruit load list contains:")
+streamlit.dataframe(my_data_rows)
